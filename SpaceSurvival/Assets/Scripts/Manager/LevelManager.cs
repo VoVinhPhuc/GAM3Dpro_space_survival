@@ -2,7 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-//SINH S?N QU�I
+// (Đã xóa using UnityEngine.AI;)
+
+//SINH SẢN QUÁI
 public enum EndCause {
     Win,
     PlayerLoss,
@@ -42,6 +44,8 @@ public class LevelManager : MonoBehaviour
     [Range(1, 2)][SerializeField] float defenseIncreasePerLevel = 1.05f;
     [Range(1, 2)][SerializeField] float attackIncreasePerLevel = 1.2f;
 
+    // (Đã xóa Header "Spawning" và biến 'navMeshSearchRadius')
+
     float currentwaveIncrease = 1f;
     float currentHpIncrease = 1f;
     float defenseIncrease = 1f;
@@ -54,12 +58,12 @@ public class LevelManager : MonoBehaviour
     bool firstEnemyOfWave = true;
     int sumWeight = 0;
 
-    GridController grid = null;
+    GridController grid = null; // Đây là GridController, nhưng logic dưới dùng 'flowField'
     Vector2 centerPos = Vector2.zero;
 
     //enemy variables
     OilDrill oilDrill;
-    GridController flowField;
+    GridController flowField; // <-- Sẽ dùng biến này để kiểm tra
     PlayerMovement player;
     Player playerStats;
     
@@ -78,7 +82,7 @@ public class LevelManager : MonoBehaviour
         centerPos = (Vector2) grid.gridSize * grid.cellRadius;
 
         oilDrill          = GameObject.FindObjectOfType<OilDrill>();
-        flowField         = GameObject.FindObjectOfType<GridController>();
+        flowField         = GameObject.FindObjectOfType<GridController>(); // Gán 'flowField'
         player            = GameObject.FindObjectOfType<PlayerMovement>();
         playerStats       = GameObject.FindObjectOfType<Player>();
         supplyDropSpawner = GameObject.FindObjectOfType<SupplyDropSpawner>();
@@ -95,7 +99,7 @@ public class LevelManager : MonoBehaviour
     void Update(){
         CheckGameStates();
         EnqueueEnemies();
-        SpawnEnemies();
+        SpawnEnemies(); // <-- Hàm này đã được cập nhật
     }
 
     IEnumerator spawnEnemyTimer(float time){
@@ -108,53 +112,84 @@ public class LevelManager : MonoBehaviour
         }
     }
 
+    // ##### HÀM ĐÃ ĐƯỢC CẬP NHẬT ĐỂ DÙNG GRID CONTROLLER #####
     void SpawnEnemies(){
+        // Nếu không phải lúc sinh quái, hoặc số lượng quái đã đạt tối đa, thì dừng
         if (!spawningNewEnemies || enemyCount > enemyMax) return;
 
+        // Nếu hàng đợi rỗng, kết thúc đợt sinh quái hiện tại
         if (enemyQue.Count == 0){
             spawningNewEnemies = false;
             enqueuingNextWave = true;
             return;
         }
 
-        GameObject enemyPrefab = enemyQue.Dequeue();
+        // 1. Đảm bảo GridController (flowField) đã khởi tạo xong
+        // (Trong GridController, biến 'initialized' được đặt thành true)
+        if (flowField == null || !flowField.initialized || flowField.curFlowField == null) {
+            return; // Grid chưa sẵn sàng, đợi frame sau
+        }
 
+        // 2. Vẫn tính toán vị trí sinh ngẫu nhiên (newPos) ở rìa bản đồ
         float randomDirection = Random.Range(0, 2 * Mathf.PI);
-        Vector3 newPos = new Vector3(Mathf.Cos(randomDirection) * centerPos.x, 0, Mathf.Sin(randomDirection) * centerPos.y) + new Vector3(centerPos.x, 5, centerPos.y);
+        Vector3 randomSpawnPos = new Vector3(Mathf.Cos(randomDirection) * centerPos.x, 0, Mathf.Sin(randomDirection) * centerPos.y) + new Vector3(centerPos.x, 5, centerPos.y);
 
-        var inst = Instantiate(enemyPrefab, newPos, Quaternion.identity);
-        inst.transform.parent = null;
+        // 3. Kiểm tra vị trí này với "GridController" (FlowField)
+        // (Hàm 'GetCellFromWorldPos' phải tồn tại trong class FlowField của bạn)
+        Cell cell = flowField.curFlowField.GetCellFromWorldPos(randomSpawnPos);
 
-        //adjust values
-        Enemy enemy        = inst.GetComponent<Enemy>();
-        enemy.target       = oilDrill.transform.gameObject;
-        enemy.flowField    = flowField;
-        enemy.playerStats  = playerStats;
-        enemy.player       = player;
-        enemy.levelManager = this;
-        enemy.SetHealth(enemy.currentHealth * currentHpIncrease);
-        enemy.attackPower  *= attackIncreaseIncrease;
-        enemy.defense      *= defenseIncrease;
+        // 4. Chỉ sinh quái nếu ô đó "đi được" (cost thấp)
+        // (Dựa trên logic OnDrawGizmos, vật cản có cost >= 255)
+        if (cell != null && cell.cost < 255) 
+        {
+            // Vị trí an toàn! Bắt đầu sinh quái
+            GameObject enemyPrefab = enemyQue.Dequeue(); // Lấy quái ra khỏi hàng đợi
+            
+            // Đặt quái xuống mặt đất (y=0) tại vị trí ngẫu nhiên đã được xác nhận là hợp lệ
+            randomSpawnPos.y = 0; 
+            
+            var inst = Instantiate(enemyPrefab, randomSpawnPos, Quaternion.identity);
+            inst.transform.parent = null;
 
-        enemyCount++;
+            // Gán giá trị cho quái
+            Enemy enemy       = inst.GetComponent<Enemy>();
+            enemy.target      = oilDrill.transform.gameObject;
+            enemy.flowField   = flowField; // Gán GridController cho quái
+            enemy.playerStats = playerStats;
+            enemy.player      = player;
+            enemy.levelManager = this;
+            enemy.SetHealth(enemy.currentHealth * currentHpIncrease);
+            enemy.attackPower   *= attackIncreaseIncrease;
+            enemy.defense       *= defenseIncrease;
 
-        inst.transform.position = newPos;
+            enemyCount++;
 
-        if (firstEnemyOfWave){
-            waveCount++;
-            Player.WavesCompleted += 1;
-            enemyLevel++;
+            // Logic cho quái đầu tiên (Giữ nguyên)
+            if (firstEnemyOfWave){
+                waveCount++;
+                Player.WavesCompleted += 1;
+                enemyLevel++;
 
-            currentwaveIncrease     *= waveIncreasePerLevel;
-            currentHpIncrease       *= hpIncreasePerLevel;
-            defenseIncrease         *= defenseIncreasePerLevel;
-            attackIncreaseIncrease  *= attackIncreasePerLevel;
+                currentwaveIncrease    *= waveIncreasePerLevel;
+                currentHpIncrease      *= hpIncreasePerLevel;
+                defenseIncrease        *= defenseIncreasePerLevel;
+                attackIncreaseIncrease *= attackIncreasePerLevel;
 
-            firstEnemyOfWave = false;
+                firstEnemyOfWave = false;
 
-            supplyDropSpawner.SpawnBeforeWave();
+                supplyDropSpawner.SpawnBeforeWave();
+            }
+        }
+        else
+        {
+            // 5. NẾU KHÔNG TÌM THẤY VỊ TRÍ HỢP LỆ (ô này là vật cản)
+            // Bỏ qua và thử lại ở frame sau với 1 vị trí ngẫu nhiên khác.
+            // Quái vật vẫn an toàn trong Queue vì ta chưa gọi Dequeue.
+            return;
         }
     }
+    // ##### KẾT THÚC HÀM CẬP NHẬT #####
+
 
     void EnqueueEnemies(){
         if (!enqueuingNextWave) return;
@@ -163,8 +198,15 @@ public class LevelManager : MonoBehaviour
         int maxLoop = Mathf.Min(enemyData.Length, waveCount + 1);
         int tempSumWeight = sumWeight;
 
-        for (int i = enemyData.Length - 1; i > maxLoop; --i){
+        for (int i = enemyData.Length - 1; i >= maxLoop; --i){ // Sửa: i > maxLoop thành i >= maxLoop để an toàn hơn
             tempSumWeight -= enemyData[i].spawnWeight;
+        }
+
+        // Đảm bảo tempSumWeight không âm nếu có lỗi logic
+        if (tempSumWeight <= 0 && enemyData.Length > 0) {
+            tempSumWeight = enemyData[0].spawnWeight;
+        } else if (tempSumWeight <= 0) {
+            return; // Không có enemyData nào
         }
 
         int ranEnemyRange = Random.Range(0, tempSumWeight);
@@ -177,7 +219,7 @@ public class LevelManager : MonoBehaviour
             }
         }
 
-        if (!found) enemyQue.Enqueue(enemyData[0].enemyPrefab);
+        if (!found && enemyData.Length > 0) enemyQue.Enqueue(enemyData[0].enemyPrefab);
         if (enemyQue.Count >= enemiesPerWave * currentwaveIncrease) enqueuingNextWave = false;
     }
 
@@ -188,13 +230,13 @@ public class LevelManager : MonoBehaviour
             Player.WavesCompleted += 1;
             SceneManager.LoadScene(endScene);
         }
-        else if (playerStats.currentHealth <= 0) { // Lose via Player Health
+        else if (playerStats != null && playerStats.currentHealth <= 0) { // Lose via Player Health
             playerStats.CleanUp();
             endCause = EndCause.PlayerLoss;
             SceneManager.LoadScene(endScene);
         }
-        else if (oilDrill.currentHealth <= 0) { // Lose via Oil Drill
-            playerStats.CleanUp();
+        else if (oilDrill != null && oilDrill.currentHealth <= 0) { // Lose via Oil Drill
+            if(playerStats != null) playerStats.CleanUp();
             endCause = EndCause.OilDrillLoss;
             SceneManager.LoadScene(endScene);
         }
