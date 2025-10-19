@@ -25,7 +25,7 @@ public class LevelManagerHUD : MonoBehaviour
         // Phase
         if (displayedWaveCount != manager.waveCount) {
             if (manager.waveCount != manager.numberOfWaves) {
-                phaseText.text = "Wave " + manager.waveCount;
+                phaseText.text = "Chuẩn bị " + manager.waveCount;
                 progressBar.SetMaxValue(manager.timeBetweenWaves);
             } else {
                 phaseText.text = "Final Wave";
@@ -36,7 +36,7 @@ public class LevelManagerHUD : MonoBehaviour
 
         // Enemy Count
         if (displayedEnemyCount != manager.enemyCount) {
-            enemyCountText.text = "Enemy Count: " + manager.enemyCount;
+            enemyCountText.text = "Số lượng quái: " + manager.enemyCount;
             displayedEnemyCount = manager.enemyCount;
         }
     }
