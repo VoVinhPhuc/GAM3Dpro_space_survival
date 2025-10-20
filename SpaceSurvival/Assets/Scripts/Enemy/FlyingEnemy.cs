@@ -44,6 +44,9 @@ public class FlyingEnemy : Enemy
     {
         base.Start();
         
+
+
+        // rb
         rb              = GetComponent<Rigidbody>();
         agroRangeSqr    = agroDistance * agroDistance;
         attackRangeSqr  = attackDistance * attackDistance;
