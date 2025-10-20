@@ -4,9 +4,6 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
-
-
-
      public enum STATE {
         AGRO_OIL = 0,
         AGRO_DISTRACTION,
@@ -16,9 +13,11 @@ public class Enemy : MonoBehaviour
         DEAD,
     }
 
-
-
-    
+    [System.Serializable]
+    public struct ItemDrop{
+        public GameObject item;
+        public float chance;
+    }
 
     [Header("Enemy Stats")]
     [SerializeField] protected float moveSpeed = 1f;
@@ -29,13 +28,11 @@ public class Enemy : MonoBehaviour
     public bool isEnemy = true;
     public bool isFlying = true;
 
-
-    
-    [System.Serializable]
-    public struct ItemDrop{
-        public GameObject item;
-        public float chance;
-    }
+    [HideInInspector]public GameObject target;
+    [HideInInspector]public GridController flowField = null;
+    [HideInInspector]public PlayerMovement player = null;
+    [HideInInspector]public Player playerStats = null;
+    [HideInInspector]public LevelManager levelManager = null;
 
     public STATE state = STATE.AGRO_OIL;
 
@@ -49,22 +46,13 @@ public class Enemy : MonoBehaviour
     bool firstSetHealth = false; 
     public bool isDistracted = false;
 
-    [HideInInspector]public GameObject target;
-    [HideInInspector]public GridController flowField = null;
-    [HideInInspector]public PlayerMovement player = null;
-    [HideInInspector]public Player playerStats = null;
-    [HideInInspector] public LevelManager levelManager = null;
-
-
-    protected void Update()
-    {
-        CheckDeadState(); // Fixes issue of unkillable enemies
-    }
-    
-    protected void Start()
-    {
+    protected void Start() {
         SetHealth(maxHealth);
         healthBar.transform.gameObject.SetActive(false);
+    }
+
+    protected void Update() {
+        CheckDeadState(); // Fixes issue of unkillable enemies
     }
 
     public void TakeDamage(float amount, bool ignoreSound = false) {
