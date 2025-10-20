@@ -19,6 +19,12 @@ public class Enemy : MonoBehaviour
         public float chance;
     }
 
+
+
+
+
+    
+
     [Header("Enemy Stats")]
     [SerializeField] protected float moveSpeed = 1f;
     [SerializeField] protected float maxMoveSpeed = 1f;
