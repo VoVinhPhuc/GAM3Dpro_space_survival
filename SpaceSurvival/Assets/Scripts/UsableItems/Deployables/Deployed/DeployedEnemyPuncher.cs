@@ -34,6 +34,9 @@ public class DeployedEnemyPuncher : Enemy
     private Player playerObj;
     private DeployedStatus status;
 
+
+
+
     new void Start()
     {
         playerObj = GameObject.FindObjectOfType<Player>();
@@ -41,10 +44,10 @@ public class DeployedEnemyPuncher : Enemy
 
         SetHealth(maxHealth + (playerObj.maxHealth - playerObj.initialHealth));
         healthBar.transform.gameObject.SetActive(false);
-        
+
         rb = GetComponent<Rigidbody>();
         attackRangeEnemySqr = attackOilEnemyDist * attackOilEnemyDist;
-        
+
         //set navmeshagent
         navMeshAgent = GetComponentInChildren<NavMeshAgent>();
         navMeshAgent.speed = moveSpeed;
