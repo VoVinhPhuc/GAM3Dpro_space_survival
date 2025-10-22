@@ -4,7 +4,6 @@ using System;
 using UnityEngine;
 
 
-// Source: https://www.youtube.com/watch?v=_QajrabyTJc
 public class PlayerMovement : MonoBehaviour
 {
 	[SerializeField] CharacterController controller;
