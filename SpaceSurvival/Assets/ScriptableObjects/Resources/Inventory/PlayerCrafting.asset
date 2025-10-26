@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c0ea775ec4f20642b379da91ad41391, type: 3}
   m_Name: PlayerCrafting
   m_EditorClassIdentifier: 
+  displayAvailableOnly: 0
   playerInventory: {fileID: 11400000, guid: a5e9cecb9c354224a862093b2c27e37a, type: 2}
   container:
     items:

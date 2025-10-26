@@ -640,8 +640,8 @@ MonoBehaviour:
   levelManager: {fileID: 0}
   state: 0
   healthBar: {fileID: 5857862155765646953}
-  currentHealth: 100
-  maxHealth: 100
+  currentHealth: 200
+  maxHealth: 200
   itemDrops: []
   isDistracted: 0
   attackOilDistance: 6.5

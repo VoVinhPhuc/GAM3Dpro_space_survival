@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-//M? HÒM ??
+
 public class InventoryCanvas : MonoBehaviour
 {
     public static bool InventoryIsOpen = false;
@@ -15,11 +15,11 @@ public class InventoryCanvas : MonoBehaviour
         if (PauseMenu.GameIsPaused) return;
 
         if (InventoryIsOpen) {
-            if (Input.GetKeyDown(KeyCode.C) || Input.GetKeyUp(KeyCode.Escape)) {
+            if (Input.GetKeyDown(KeyCode.Tab) || Input.GetKeyUp(KeyCode.Escape)) {
                 Close();
             }
         } else {
-            if (Input.GetKeyDown(KeyCode.C) && Scope.activeInHierarchy == false) {
+            if (Input.GetKeyDown(KeyCode.Tab) && Scope.activeInHierarchy == false) {
                 Open();
             }
         }

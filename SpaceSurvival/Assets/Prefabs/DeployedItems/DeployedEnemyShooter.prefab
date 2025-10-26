@@ -671,11 +671,11 @@ MonoBehaviour:
   levelManager: {fileID: 0}
   state: 0
   healthBar: {fileID: 5857862155765646953}
-  currentHealth: 100
-  maxHealth: 100
+  currentHealth: 200
+  maxHealth: 200
   itemDrops: []
   isDistracted: 0
-  attackEnemyDist: 20
+  attackEnemyDist: 30
   damping: 0.98
   searchRadius: 20
   searchFields:
@@ -704,7 +704,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7bcdb3097c48a34428baf337ffe2a591, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  range: 20
+  range: 30
   frequency: 1
   enemyLimit: 3
   excludeFlyer: 0

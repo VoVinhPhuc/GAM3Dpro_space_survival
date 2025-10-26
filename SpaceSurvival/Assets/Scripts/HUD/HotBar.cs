@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-// Credit: https://www.youtube.com/watch?v=kdckcSwPkrg
+
 public class HotBar : MonoBehaviour
 {
     [SerializeField] private int slots = 7;
